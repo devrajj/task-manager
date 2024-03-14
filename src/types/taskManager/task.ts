@@ -4,7 +4,7 @@ export namespace Task {
     _id?: mongoose.Types.ObjectId;
     title?: string;
     description?: string;
-    status?: string;
+    status?: number;
     createdAt?: Date;
     updatedAt?: Date;
   };

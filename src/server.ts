@@ -1,20 +1,24 @@
 import express, { Application } from "express";
 import dotenvSafe from "dotenv-safe";
-import mongoDBService from "./database/mongodb";
+import mongoDBService from "./connections/mongodb";
 import logger from "./lib/logger";
+import routes from "./routes/routes";
+import responseHandler from "./routes/middleware/responseHandler";
 dotenvSafe.config();
 
 const app: Application = express();
+app.use(express.json({ limit: "5mb" }));
+app.use(responseHandler);
+app.use(routes);
 const PORT: number | string = process.env.PORT || 3001;
 (async () => {
   try {
     await mongoDBService.connectWithRetry();
   } catch (error) {
-    logger.info(`Error connecting to MongoDB: ${error}`);
-    process.exit(1); // Exit the process if MongoDB connection fails
+    process.exit(1);
   }
 
   app.listen(PORT, () => {
-    console.log(`Server listening on port: ${PORT}`);
+    logger.info(`Server listening on port: ${PORT}`);
   });
 })();
