@@ -48,7 +48,7 @@ mongodbUri=mongodb+srv://devrajsen14:password@cluster0.i45cv6t.mongodb.net/taskm
 
 ## API Documentation
 
-To explore and understand the API endpoints and functionality, refer to the [Postman API Documentation](https://documenter.postman.com/preview/20988862-92a0dcb0-a440-4467-a6f3-3e95c9a3d732?environment=&versionTag=latest&apiName=CURRENT&version=latest&documentationLayout=classic-double-column&documentationTheme=light&logo=https%3A%2F%2Fres.cloudinary.com%2Fpostman%2Fimage%2Fupload%2Ft_team_logo%2Fv1%2Fteam%2Fanonymous_team&logoDark=https%3A%2F%2Fres.cloudinary.com%2Fpostman%2Fimage%2Fupload%2Ft_team_logo%2Fv1%2Fteam%2Fanonymous_team&right-sidebar=303030&top-bar=FFFFFF&highlight=FF6C37&right-sidebar-dark=303030&top-bar-dark=212121&highlight-dark=FF6C37).
+To explore and understand the API endpoints and functionality, refer to the [Postman API Documentation](https://documenter.getpostman.com/view/20988862/2sA2xmUVmy).
 
 **Accessing Postman Documentation:**
 
