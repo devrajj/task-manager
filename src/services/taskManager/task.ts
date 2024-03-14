@@ -1,3 +1,4 @@
+import { DeleteResult } from "mongodb";
 import { StatusType } from "../../constants/enums";
 import {
   insert,
@@ -6,6 +7,7 @@ import {
   deleteOne,
   findOneAndUpdate,
 } from "../../database/task";
+import { Task } from "../../types/taskManager/task";
 
 export const createTask = async ({
   title,
@@ -27,7 +29,7 @@ export const createTask = async ({
     updatedAt: new Date(),
     status: StatusType.Open,
   };
-  const createdTask = await insert(insertDict);
+  const createdTask: Task.ITask | null = await insert(insertDict);
   if (createdTask && createdTask._id) {
     return {
       ok: true,
@@ -70,7 +72,7 @@ export const getTaskDetail = async ({
 }: {
   id: string;
 }): Promise<Interface.ApiResponse<{}>> => {
-  const foundTask = await findOne({ _id: id });
+  const foundTask: Task.ITask | null = await findOne({ _id: id });
   if (foundTask && Object.keys(foundTask).length) {
     return {
       ok: true,
@@ -111,9 +113,13 @@ export const updateTask = async ({
   if (status) {
     updateDict.status = status;
   }
-  const updatedTask = await findOneAndUpdate({ _id: id }, updateDict, {
-    new: true,
-  });
+  const updatedTask: Task.ITask | null = await findOneAndUpdate(
+    { _id: id },
+    updateDict,
+    {
+      new: true,
+    }
+  );
   if (updatedTask) {
     return {
       ok: true,
@@ -131,7 +137,7 @@ export const deleteTask = async ({
 }: {
   id: string;
 }): Promise<Interface.ApiResponse<{}>> => {
-  const deletedTask = await deleteOne({ _id: id });
+  const deletedTask: DeleteResult = await deleteOne({ _id: id });
   if (deletedTask && deletedTask.deletedCount) {
     return {
       ok: true,

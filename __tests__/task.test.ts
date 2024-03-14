@@ -1,15 +1,28 @@
 import request from "supertest";
-import express from "express";
+import express, { Application } from "express";
 import routes from "../src/routes/routes";
 import mongoDBService from "../src/connections/mongodb";
 import responseHandler from "../src/routes/middleware/responseHandler";
 import * as taskService from "../src/services/taskManager/task";
 import { findOne } from "../src/database/task";
+import { StatusType } from "../src/constants/enums";
+import { DEFAULTPAGENUMBER } from "../src/constants/constants";
+import { Task } from "../src/types/taskManager/task";
 
-const app = express();
-app.use(express.json());
+const app: Application = express();
+app.use(express.json({ limit: "5mb" }));
 app.use(responseHandler);
 app.use(routes);
+
+interface APIResponse<T> {
+  status?: number;
+  ok?: boolean;
+  body: {
+    ok: boolean;
+    err?: string;
+    data?: T;
+  };
+}
 
 (async () => {
   try {
@@ -18,8 +31,6 @@ app.use(routes);
     process.exit(1);
   }
 })();
-import { StatusType } from "../src/constants/enums";
-import { DEFAULTPAGENUMBER } from "../src/constants/constants";
 
 describe("Create Task API", () => {
   afterEach(() => {
@@ -27,12 +38,15 @@ describe("Create Task API", () => {
   });
 
   it("should return unauthorized if apikey is wrong", async () => {
-    const taskData = {
+    const taskData: {
+      title: string;
+      description: string;
+    } = {
       title: "Test Task 1",
       description: "Test Description 1",
     };
-    const apikey = "1234";
-    const response = await request(app)
+    const apikey: string = "1234";
+    const response: APIResponse<any> = await request(app)
       .post("/tasks")
       .send(taskData)
       .set("authorization", apikey);
@@ -46,11 +60,14 @@ describe("Create Task API", () => {
   });
 
   it("should create a new task", async () => {
-    const taskData = {
+    const taskData: {
+      title: string;
+      description: string;
+    } = {
       title: "Test Task 2",
       description: "Test Description 2",
     };
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .post("/tasks")
       .send(taskData)
       .set("authorization", `${process.env.apiAccess}`);
@@ -71,10 +88,12 @@ describe("Create Task API", () => {
   });
 
   it("should return an error if title is missing", async () => {
-    const taskData = {
+    const taskData: {
+      description: string;
+    } = {
       description: "Test Description 3",
     };
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .post("/tasks")
       .send(taskData)
       .set("authorization", `${process.env.apiAccess}`);
@@ -88,10 +107,12 @@ describe("Create Task API", () => {
   });
 
   it("should return an error if description is missing", async () => {
-    const taskData = {
+    const taskData: {
+      title: string;
+    } = {
       title: "Test Task 4",
     };
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .post("/tasks")
       .send(taskData)
       .set("authorization", `${process.env.apiAccess}`);
@@ -105,7 +126,10 @@ describe("Create Task API", () => {
   });
 
   it("should return an error if task creation fails", async () => {
-    const taskData = {
+    const taskData: {
+      title: string;
+      description: string;
+    } = {
       title: "Test Task 5",
       description: "Test Description 5",
     };
@@ -114,7 +138,7 @@ describe("Create Task API", () => {
       .spyOn(taskService, "createTask")
       .mockRejectedValueOnce(new Error("Failed to create task"));
 
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .post("/tasks")
       .send(taskData)
       .set("authorization", `${process.env.apiAccess}`);
@@ -130,7 +154,7 @@ describe("Create Task API", () => {
 
 describe("Get Task List", () => {
   it("should return a list of tasks with default pagination values if no query parameters provided", async () => {
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .get("/tasks")
       .set("authorization", `${process.env.apiAccess}`);
     expect(response.status).toBe(200);
@@ -142,9 +166,9 @@ describe("Get Task List", () => {
   });
 
   it("should return a list of tasks with custom pagination values", async () => {
-    const pageNumber = 2;
-    const pageLength = 5;
-    const response = await request(app)
+    const pageNumber: number = 2;
+    const pageLength: number = 5;
+    const response: APIResponse<any> = await request(app)
       .get(`/tasks?pageNumber=${pageNumber}&pageLength=${pageLength}`)
       .set("authorization", `${process.env.apiAccess}`);
 
@@ -157,8 +181,8 @@ describe("Get Task List", () => {
   });
 
   it("should return an error if pageNumber is invalid", async () => {
-    const invalidPageNumber = "invalid_page_number";
-    const response = await request(app)
+    const invalidPageNumber: string = "invalid_page_number";
+    const response: APIResponse<any> = await request(app)
       .get(`/tasks?pageNumber=${invalidPageNumber}`)
       .set("authorization", `${process.env.apiAccess}`);
 
@@ -168,8 +192,8 @@ describe("Get Task List", () => {
   });
 
   it("should return an error if pageLength is invalid", async () => {
-    const invalidPageLength = "invalid_page_length";
-    const response = await request(app)
+    const invalidPageLength: string = "invalid_page_length";
+    const response: APIResponse<any> = await request(app)
       .get(`/tasks?pageLength=${invalidPageLength}`)
       .set("authorization", `${process.env.apiAccess}`);
 
@@ -181,21 +205,21 @@ describe("Get Task List", () => {
 
 describe("Get Task Detail", () => {
   it("should return a task detail", async () => {
-    const foundTask = await findOne({});
-    const taskId = foundTask?._id;
+    const foundTask: Task.ITask | null = await findOne({});
+    const taskId: string | undefined = foundTask?._id?.toString();
 
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .get(`/tasks/${taskId}`)
       .set("authorization", `${process.env.apiAccess}`);
     expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.data).toEqual(expect.any(Object));
-    expect(response.body.data._id.toString()).toBe(taskId?.toString());
+    expect(response.body.data._id.toString()).toBe(taskId);
   });
 
   it("should return an error if task detail not found", async () => {
-    const nonExistentTaskId = "65f265f307a979093e8ceb64";
-    const response = await request(app)
+    const nonExistentTaskId: string = "65f265f307a979093e8ceb64";
+    const response: APIResponse<any> = await request(app)
       .get(`/tasks/${nonExistentTaskId}`)
       .set("authorization", `${process.env.apiAccess}`);
     expect(response.status).toBe(200);
@@ -204,8 +228,8 @@ describe("Get Task Detail", () => {
   });
 
   it("should return an error if invalid task ID is provided", async () => {
-    const invalidTaskId = "invalid_task_id";
-    const response = await request(app)
+    const invalidTaskId: string = "invalid_task_id";
+    const response: APIResponse<any> = await request(app)
       .get(`/tasks/${invalidTaskId}`)
       .set("authorization", `${process.env.apiAccess}`);
 
@@ -219,16 +243,20 @@ describe("Get Task Detail", () => {
 
 describe("Update Task", () => {
   it("should update a task successfully", async () => {
-    const foundTask = await findOne({});
-    const taskId = foundTask?._id;
+    const foundTask: Task.ITask | null = await findOne({});
+    const taskId: string | undefined = foundTask?._id?.toString();
 
-    const updatedTaskData = {
+    const updatedTaskData: {
+      title: string;
+      description: string;
+      status: number;
+    } = {
       title: "Updated Task Title 7",
       description: "Updated Task Description 7",
       status: StatusType.InProgress,
     };
 
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .put(`/tasks/${taskId}`)
       .send(updatedTaskData)
       .set("authorization", `${process.env.apiAccess}`);
@@ -242,14 +270,18 @@ describe("Update Task", () => {
   });
 
   it("should return an error if task ID is invalid", async () => {
-    const invalidTaskId = "invalid_task_id";
-    const updatedTaskData = {
+    const invalidTaskId: string = "invalid_task_id";
+    const updatedTaskData: {
+      title: string;
+      description: string;
+      status: number;
+    } = {
       title: "Updated Task Title 9",
       description: "Updated Task Description 9",
       status: 2,
     };
 
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .put(`/tasks/${invalidTaskId}`)
       .send(updatedTaskData)
       .set("authorization", `${process.env.apiAccess}`);
@@ -264,23 +296,23 @@ describe("Update Task", () => {
 
 describe("Delete Task", () => {
   it("should delete a task successfully", async () => {
-    const foundTask = await findOne({});
-    const taskId = foundTask?._id;
+    const foundTask: Task.ITask | null = await findOne({});
+    const taskId: string | undefined = foundTask?._id?.toString();
 
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .delete(`/tasks/${taskId}`)
       .set("authorization", `${process.env.apiAccess}`);
     expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.data).toEqual(expect.any(Object));
     expect(response.body.data.message).toBe("Task deleted successfully");
-    expect(response.body.data.id.toString()).toBe(taskId?.toString());
+    expect(response.body.data.id.toString()).toBe(taskId);
   });
 
   it("should return an error if task ID is invalid", async () => {
-    const invalidTaskId = "invalid_task_id";
+    const invalidTaskId: string = "invalid_task_id";
 
-    const response = await request(app)
+    const response: APIResponse<any> = await request(app)
       .delete(`/tasks/${invalidTaskId}`)
       .set("authorization", `${process.env.apiAccess}`);
 

@@ -5,7 +5,7 @@ export const authenticateApiKey = (
   res: Response,
   next: NextFunction
 ) => {
-  const authorizationKey = req.headers?.authorization;
+  const authorizationKey: string | undefined = req.headers?.authorization;
   if (authorizationKey === process.env.apiAccess) {
     return next();
   } else {

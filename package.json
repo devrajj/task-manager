@@ -2,10 +2,10 @@
   "name": "task-manager",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/server.js",
+  "main": "./dist/src/server.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "npm run build && node -r dotenv/config dist/server.js"
+    "start": "npm run build && node -r dotenv/config dist/src/server.js"
   },
   "repository": {
     "type": "git",

@@ -3,9 +3,11 @@ import logger from "../lib/logger";
 import dotenvSafe from "dotenv-safe";
 dotenvSafe.config();
 
-const MAX_RETRIES = 3;
+const MAX_RETRIES: number = 3;
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const wait = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
 
 class MongoDBService {
   private dbURI: string = process.env.mongodbUri as string;
