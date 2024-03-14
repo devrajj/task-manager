@@ -1,5 +1,7 @@
 import logger from "../../../lib/logger";
-const { ObjectId } = require("mongoose").Types;
+import { Types } from "mongoose";
+
+const { ObjectId } = Types;
 import { Request, Response } from "express";
 import * as taskService from "../../../services/taskManager/task";
 import {

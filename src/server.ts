@@ -22,3 +22,5 @@ const PORT: number | string = process.env.PORT || 3001;
     logger.info(`Server listening on port: ${PORT}`);
   });
 })();
+
+export default app;
